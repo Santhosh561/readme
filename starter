@@ -1,0 +1,83 @@
+requirements
+rule "Customer Eligibility"
+when
+   customer.age > 25
+   and (customer.country == "US" or (customer.country == "CA" and customer.loyaltyScore > 500))
+then
+   mark eligible = true
+end
+
+Schema on MongoDB
+{
+  _id: ObjectId("..."),
+  name: "Customer Eligibility",
+  description: "Rule to mark eligible customers",
+  active: true,
+  priority: 1,
+  conditions: {
+    and: [
+      { gt: ["$age", 25] },
+      {
+        or: [
+          { eq: ["$country", "US"] },
+          {
+            and: [
+              { eq: ["$country", "CA"] },
+              { gt: ["$loyaltyScore", 500] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  actions: [
+    { set: { field: "eligible", value: true } }
+  ]
+}
+
+
+Rule Evaluation(Dynamic Execution)
+To evaluate rules stored in MongoDB, you can:
+
+Fetch the rule JSON from MongoDB.
+
+Recursively translate the condition tree into a MongoDB $expr.
+
+Run the $expr inside a find or aggregate.
+db.customers.aggregate([
+  {
+    $addFields: {
+      eligible: {
+        $cond: {
+          if: {
+            $and: [
+              { $gt: ["$age", 25] },
+              {
+                $or: [
+                  { $eq: ["$country", "US"] },
+                  {
+                    $and: [
+                      { $eq: ["$country", "CA"] },
+                      { $gt: ["$loyaltyScore", 500] }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          then: true,
+          else: false
+        }
+      }
+    }
+  }
+])
+Extensions
+
+We can enhance this Drools-like structure:
+
+Multiple actions (set field, send notification, log event).
+
+Temporal conditions (e.g., effective dates for rules).
+
+Rule chaining (use results of one rule in another).
