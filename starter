@@ -81,3 +81,5 @@ Multiple actions (set field, send notification, log event).
 Temporal conditions (e.g., effective dates for rules).
 
 Rule chaining (use results of one rule in another).
+
+“If (customer.age > 25 AND (customer.country = 'US' OR (customer.country = 'CA' AND customer.loyaltyScore > 500))) THEN mark as eligible.”
